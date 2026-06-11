@@ -14,6 +14,7 @@
 
 ## 🌟 最新文章
 
+- [给多个 Hermes Bot 装上智谱看图API（跨Profile踩坑实录）](./posts/hermes-multi-bot-vision.md)
 - [Hermes Agent × 智谱 GLM-4V 视觉 API 集成踩坑记录](./posts/hermes-zhipu-vision.md)
 
 ---
