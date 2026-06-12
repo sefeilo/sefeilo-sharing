@@ -20,25 +20,30 @@ import config
 
 
 # ============================================================
-# TTS 引擎（使用 edge-tts，纯异步）
+# TTS 引擎
 # ============================================================
 def speak(text):
-    """在子线程里跑 TTS，不阻塞主界面"""
+    """用 edge-tts 生成语音并播放"""
     def _run():
         try:
-            async def _speak():
+            async def _gen():
                 import edge_tts
-                communicate = edge_tts.Communicate(
-                    text[:500], config.TTS_VOICE,  # 截短避免超长
-                    rate=config.TTS_SPEED
-                )
-                await communicate.save("__sefiro_tts__.mp3")
-                os.startfile("__sefiro_tts__.mp3")  # Windows only
-            asyncio.run(_speak())
+                c = edge_tts.Communicate(text[:500], config.TTS_VOICE, rate=config.TTS_SPEED)
+                await c.save("__sefiro_tts__.mp3")
+            asyncio.run(_gen())
+
+            # 播放：优先 pygame（后台播放），回退 os.startfile
+            try:
+                import pygame
+                pygame.mixer.init()
+                pygame.mixer.music.load("__sefiro_tts__.mp3")
+                pygame.mixer.music.play()
+            except ImportError:
+                os.startfile("__sefiro_tts__.mp3")
         except ImportError:
-            pass  # 没装 edge-tts，静默跳过
+            pass  # 没装 edge-tts，跳过
         except Exception as e:
-            print(f"[TTS 提示] 语音没成功（不影响聊天）: {e}")
+            print(f"[TTS] {e}")
     threading.Thread(target=_run, daemon=True).start()
 
 
@@ -107,22 +112,69 @@ class GifPlayer:
             return False
 
     def load_placeholder(self, size=(180, 180)):
-        """没有素材时显示占位图（渐变圆）"""
-        from PIL import ImageDraw
-        img = Image.new("RGBA", size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        draw.ellipse([5, 5, size[0]-5, size[1]-5], fill="#E0B0FF", outline="#DDA0DD", width=3)
-        # 画眼睛
-        eye_y = size[0] // 3
-        draw.ellipse([55, eye_y-10, 75, eye_y+10], fill="white")
-        draw.ellipse([105, eye_y-10, 125, eye_y+10], fill="white")
-        draw.ellipse([62, eye_y-5, 68, eye_y+5], fill="#333")
-        draw.ellipse([112, eye_y-5, 118, eye_y+5], fill="#333")
-        # 画嘴巴
-        draw.arc([65, eye_y+20, 115, eye_y+50], 0, 180, fill="#FF69B4", width=2)
-        self.frames = [ImageTk.PhotoImage(img)]
-        self.durations = [3000]
-        self.total_frames = 1
+        """没有素材时，用PIL画一个会眨眼的小人儿"""
+        self.frames.clear()
+        self.durations.clear()
+        cx, cy = size // 2, size // 2
+        palette = {
+            "skin": "#FDEBD0", "hair": "#8B4513", "hair_l": "#A0522D",
+            "eye": "#2C3E50", "white": "#FFFFFF", "blush": "#FFB6C1",
+            "mouth": "#E74C3C", "dress": "#9B59B6", "dress_d": "#8E44AD",
+            "bow": "#FF69B4",
+        }
+
+        def _frame(blink=False, wave=0):
+            img = Image.new("RGBA", size, (0, 0, 0, 0))
+            draw = ImageDraw.Draw(img)
+            # 头发
+            draw.polygon([(cx-35,cy-35),(cx-10,cy-50),(cx+10,cy-50),
+                          (cx+35,cy-35),(cx+40,cy+10),(cx+45,cy+40),
+                          (cx+30,cy+55),(cx+20,cy+45),(cx-20,cy+45),
+                          (cx-30,cy+55),(cx-45,cy+40),(cx-40,cy+10)],
+                         fill=palette["hair"])
+            draw.ellipse([cx-42,cy-25,cx-35,cy+35], fill=palette["hair"])
+            draw.ellipse([cx+35,cy-25,cx+42,cy+35], fill=palette["hair"])
+            bangs = [(cx-30,cy-30),(cx-20,cy-38),(cx-5,cy-42),(cx+5,cy-42),
+                     (cx+20,cy-38),(cx+30,cy-30),(cx+25,cy-22),(cx+15,cy-28),
+                     (cx+5,cy-30),(cx-5,cy-30),(cx-15,cy-28),(cx-25,cy-22)]
+            draw.polygon(bangs, fill=palette["hair_l"])
+            # 脸
+            draw.ellipse([cx-30,cy-32,cx+30,cy+25], fill=palette["skin"])
+            # 眼睛
+            es, ey = 14, cy-5
+            for s in [-1, 1]:
+                ex = cx + s*es
+                if blink:
+                    draw.arc([ex-8,ey+3,ex+8,ey+8], 0, 180, fill=palette["eye"], width=3)
+                else:
+                    draw.ellipse([ex-8,ey-5,ex+8,ey+5], fill=palette["white"])
+                    draw.ellipse([ex-4,ey-3,ex+4,ey+3], fill=palette["eye"])
+                    draw.ellipse([ex-1,ey-1,ex+2,ey+2], fill="white")
+            # 腮红 + 嘴
+            for s in [-1, 1]:
+                draw.ellipse([cx+s*22,cy+6,cx+s*12,cy+14], fill=palette["blush"])
+            draw.arc([cx-8,cy+12,cx+8,cy+20], 0, 180, fill=palette["mouth"], width=2)
+            # 身体 + 蝴蝶结
+            bt = cy+20
+            draw.polygon([(cx-30,bt),(cx+30,bt),(cx+35,bt+40),(cx-35,bt+40)],
+                         fill=palette["dress"])
+            draw.polygon([(cx-8,bt),(cx+8,bt),(cx,bt+12)], fill="white")
+            draw.ellipse([cx-12,cy-55,cx-2,cy-45], fill=palette["bow"])
+            draw.ellipse([cx+2,cy-55,cx+12,cy-45], fill=palette["bow"])
+            # 手臂摆动
+            aw = wave  # -5 ~ 5
+            draw.line([cx-30+aw,bt+5, cx-40-aw,bt+30], fill=palette["skin"], width=5)
+            draw.line([cx+30-aw,bt+5, cx+40+aw,bt+30], fill=palette["skin"], width=5)
+            return img
+
+        # 生成8帧：4帧睁眼(摆臂交替) + 1帧闭眼 + 3帧睁眼
+        for i in range(4):
+            self.frames.append(ImageTk.PhotoImage(_frame(blink=False, wave=3 if i%2==0 else -3)))
+        self.frames.append(ImageTk.PhotoImage(_frame(blink=True, wave=0)))   # 眨眼
+        for i in range(3):
+            self.frames.append(ImageTk.PhotoImage(_frame(blink=False, wave=3 if i%2==0 else -3)))
+        self.durations = [400, 400, 400, 400, 150, 400, 400, 400]
+        self.total_frames = len(self.frames)
 
     def start(self):
         """开始播放动画"""
