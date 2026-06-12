@@ -29,15 +29,16 @@ def speak(text):
             async def _speak():
                 import edge_tts
                 communicate = edge_tts.Communicate(
-                    text, config.TTS_VOICE,
+                    text[:500], config.TTS_VOICE,  # 截短避免超长
                     rate=config.TTS_SPEED
                 )
-                await communicate.save("__tts_temp__.mp3")
-                # 用系统默认播放器播放
-                os.startfile("__tts_temp__.mp3")  # Windows only
+                await communicate.save("__sefiro_tts__.mp3")
+                os.startfile("__sefiro_tts__.mp3")  # Windows only
             asyncio.run(_speak())
+        except ImportError:
+            pass  # 没装 edge-tts，静默跳过
         except Exception as e:
-            print(f"[TTS Error] {e}")
+            print(f"[TTS 提示] 语音没成功（不影响聊天）: {e}")
     threading.Thread(target=_run, daemon=True).start()
 
 
@@ -175,12 +176,15 @@ class ChatWindow(tk.Toplevel):
         bottom_frame.pack(fill=tk.X, padx=8, pady=(4, 8))
 
         self.input_entry = tk.Entry(
-            bottom_frame, bg="#0f3460", fg="#eee",
+            bottom_frame, bg="#1a1a3e", fg="white",
             font=("微软雅黑", 10),
-            insertbackground="#eee", relief=tk.FLAT
+            insertbackground="white", relief=tk.SUNKEN, bd=2
         )
-        self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=6)
+        self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=8, padx=(0, 4))
         self.input_entry.bind("<Return>", self.send_message)
+        # 添加提示文字
+        self.input_entry.insert(0, "点这里输入消息...")
+        self.input_entry.bind("<FocusIn>", lambda e: self.input_entry.delete(0, tk.END) if self.input_entry.get() == "点这里输入消息..." else None)
 
         send_btn = tk.Button(
             bottom_frame, text="发送", bg="#e94560", fg="white",
