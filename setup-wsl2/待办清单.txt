@@ -1,0 +1,18 @@
+=== 新大机箱（Win11+4090）部署清单 ===
+创建：2026-06-13
+状态：待新机到货
+
+━━━ 爸爸要做的一步 ━━━
+[ ] ① 开终端(管理员) → wsl --install → 重启 → 进wsl
+[ ] ② 告诉我WSL2的IP和密码
+
+━━━ 我要做的顺序 ━━━
+[ ] ① init.sh → CUDA/Python/SSH/Tailscale
+[ ] ② 跑小模型 Qwen 7B → 爸爸先体验本地聊天
+[ ] ③ OBLITERATUS → 切掉模型拒绝层（帕特丽夏写作用）
+[ ] ④ 部署 GPT-SoVITS 推理服务
+       → 帕特丽夏已有声线素材（.pth + .ckpt）
+       → 不需要训练，只需搭好推理环境
+       → 配置API接口，我说话时调这个接口出定制声线
+[ ] ⑤ deploy-kohya.sh → LoRA训练环境
+[ ] ⑥ deploy-comfyui.sh → 出图环境
