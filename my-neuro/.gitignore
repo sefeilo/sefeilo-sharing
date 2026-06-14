@@ -1,0 +1,42 @@
+# 不忽略 .gitignore 本身
+!.gitignore
+
+
+# 忽略特定文件夹
+# live-2d/2D/*
+AI记录室/*
+live-2d/build/
+live-2d/fake_neuro_audio/
+live-2d/node/
+live-2d/.claude/
+live-2d/Voice_Model_Factory
+song-library/
+full-hub/7z
+full-hub/asr-hub
+full-hub/bert-hub
+full-hub/logs
+full-hub/model
+full-hub/rag-hub
+full-hub/tts-hub
+live-2d/webui/__pycache__
+
+
+# 忽略所有 node_modules（无论在哪）
+**/node_modules/
+
+# 忽略可执行文件
+*.exe
+*.zip
+*.log
+
+#忽略无意义文件
+runtime.log
+
+# 整合包相关（不提交到仓库）
+env/
+*.tar.gz
+魔塔上传/
+测试下载/
+
+# Claude 内部文件
+.claude/

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Live2D桌宠与语音聊天</title>
+</head>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <title>Live2D桌宠与语音聊天</title>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="subtitle-container">
+        <div id="subtitle-confirm-btn">确定</div>
+        <p id="subtitle-text"></p>
+    </div>
+
+    <!-- VRM模型控制面板（展开式） -->
+    <div id="model-controls">
+        <div id="panel-buttons">
+            <div id="btn-toggle-gaze" class="ctrl-btn" title="视线追踪鼠标">👀</div>
+            <div id="btn-toggle-render" class="ctrl-btn" title="关闭VRM渲染（需VMC启用）">👁</div>
+            <div id="btn-toggle-vmc" class="ctrl-btn" title="VMC数据发送开关">📡</div>
+            <div id="btn-reset-position" class="ctrl-btn" title="重置相机视角">↺</div>
+            <div id="btn-click-through" class="ctrl-btn" title="鼠标穿透（模型不拦截鼠标）">🖱</div>
+        </div>
+        <div id="btn-toggle-panel" class="ctrl-btn" title="展开控制面板">⚙</div>
+    </div>
+
+    <div id="text-chat-container">
+        <div id="chat-messages"></div>
+        <div id="chat-input-container">
+            <div id="chat-input" contenteditable="true" placeholder="输入消息..."></div>
+            <div id="chat-send-btn">发送</div>
+        </div>
+    </div>
+
+    <!-- 歌词气泡容器 -->
+    <div id="lyrics-bubble-container">
+        <div id="lyrics-bubble-text"></div>
+    </div>
+
+    <!-- 气泡框容器 -->
+    <div id="bubble-container">
+        <div id="bubble-text"></div>
+    </div>
+
+    <!-- 工具调用气泡框堆叠容器 -->
+    <div id="tool-bubbles-container"></div>
+
+    <!-- 快捷设置面板 -->
+    <div id="quick-settings">
+        <div id="quick-settings-items">
+            <div class="quick-item" id="btn-toggle-chat">💬 打字框</div>
+            <div class="quick-item" id="btn-toggle-mode">键盘V键录音</div>
+        </div>
+        <div id="quick-gear" title="快捷功能">⚙</div>
+    </div>
+
+    <!-- 引入 Live2D 依赖 -->
+    <script src="libs/live2d.min.js"></script>
+    <script src="libs/live2dcubismcore.min.js"></script>
+    <script src="libs/pixi.min.js"></script>
+    <script src="libs/pixi-live2d-display.min.js"></script>
+    <script src="libs/pixi-live2d-display-extra.min.js"></script>
+    <script src="app.js"></script>
+
+
+</body>
+
+</html>
